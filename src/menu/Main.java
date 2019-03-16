@@ -1,9 +1,11 @@
-package game;
+package menu;
 
 import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.state.StateBasedGame;
+
+import game.Game;
 
 public class Main extends StateBasedGame {
 
@@ -40,6 +42,7 @@ public class Main extends StateBasedGame {
         try {
             AppGameContainer app = new AppGameContainer(new Main("Fracas v" + VERSION));
             app.setDisplayMode(WIDTH, HEIGHT, false);
+            app.setVSync(true);
             app.setTargetFrameRate(FPS);
             app.setShowFPS(true);
             app.start();

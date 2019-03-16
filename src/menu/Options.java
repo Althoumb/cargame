@@ -1,4 +1,4 @@
-package game;
+package menu;
 
 import java.awt.Font;
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ public class Options extends BasicGameState implements KeyListener, InputProvide
 	
 	Image backgroundimage;
 	
-	protected static Map<String, Integer> keybindings = new LinkedHashMap<String, Integer>();
+	public static Map<String, Integer> keybindings = new LinkedHashMap<String, Integer>();
 	 
 	// space between top of text options
 	int optionydelta = 20;

@@ -23,50 +23,47 @@ import org.newdawn.slick.opengl.renderer.SGL;
 import org.newdawn.slick.state.BasicGameState;
 import org.newdawn.slick.state.StateBasedGame;
 
+import menu.Options;
 import utils.Pair;
 
 public class Game extends BasicGameState implements InputProviderListener {
 	
 	private static ArrayList<Pair<Pair<Integer, Integer>, Boolean>> roadtiles = new ArrayList<Pair<Pair<Integer, Integer>, Boolean>>();
 	
-	private float tilewidth = 100;
-	private float pxinameter = 50;
-	private float carx = 0;
-	private float cary = 0;
-	private float cardirection = 0;
-	private float carangle = 0;
-	private float carspeed = 0;
-	private float caracceleration = 0;
-	private Image carimage;
-	private float acceleration = 4;
-	private float braking = 20;
+	private static float tilewidth = 100;
+	public static final float PX_PER_METER = 50;
+	
+	Car car;
+	Image carimage;
+	
 	private TrueTypeFont trueTypeFont;
 	
 	@Override
 	public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
 		// TODO Auto-generated method stub
-		carimage = new Image("/res/game/car.png");
-		carimage = carimage.getScaledCopy((int) (2.4 * pxinameter), (int) (4.0 * pxinameter));
-		carimage.setCenterOfRotation(carimage.getWidth() / 2.0f, carimage.getHeight() / 2.0f);
+	}
+	
+	@Override
+	public void enter(GameContainer gc, StateBasedGame sbg) throws SlickException {
 		Random rand = new Random(System.nanoTime());
 		for(int x = -100; x <= 100; x++) {
 			for(int y = 0; y <= 1000; y++) {
 				roadtiles.add(new Pair<Pair<Integer, Integer>, Boolean>(new Pair<Integer, Integer>(x, y), rand.nextBoolean()));
 			}
 		}
+		
 		Font font = new Font("Verdana", Font.BOLD, 20);
 		trueTypeFont = new TrueTypeFont(font, true);
-	}
-	
-	@Override
-	public void enter(GameContainer gc, StateBasedGame sbg) throws SlickException {
-		// TODO Auto-generated method stub
+		
 		InputProvider provider = new InputProvider(gc.getInput());
 		provider.addListener(this);
 		
 		for (String key : Options.keybindings.keySet()) {
 			provider.bindCommand(new KeyControl(Options.keybindings.get(key)), new BasicCommand(key));
 		}
+		
+		car = new Car(0, 0, 0, 0, 0);
+		carimage = car.getImage();
 	}
 	
 	@Override
@@ -85,33 +82,30 @@ public class Game extends BasicGameState implements InputProviderListener {
 			if (pair.getR()) {
 				float tilex = pair.getL().getL() * tilewidth;
 				float tiley = pair.getL().getR() * tilewidth;
-				tilex -= carx + gc.getWidth() / 2.0f;
-				tiley -= cary + gc.getWidth() / 2.0f;
+				tilex -= car.getX() + gc.getWidth() / 2.0f;
+				tiley -= car.getY() + gc.getWidth() / 2.0f;
 				if ((tilex + tilewidth >= 0)&&(tilex <= gc.getWidth())) {
-					if ((tiley + tilewidth >= 0)&&(tiley <= gc.getHeight())) {
-						g.fill(new Rectangle(tilex, tiley, tilewidth, tilewidth));
+					if ((-tiley + tilewidth >= 0)&&(-tiley <= gc.getHeight())) {
+						g.fill(new Rectangle(tilex, -tiley, tilewidth, tilewidth));
 					}
 				}
 			}
 		}
 		g.setDrawMode(Graphics.MODE_NORMAL);
 		g.setColor(Color.transparent);
-		carimage.setRotation(carangle);
+		carimage = carimage.getScaledCopy((int) (2.4 * PX_PER_METER), (int) (4.0 * PX_PER_METER));
+		carimage.setCenterOfRotation(carimage.getWidth() / 2.0f, carimage.getHeight() / 2.0f);
+		carimage.setRotation(car.getAngle());
 		g.drawImage(carimage, gc.getWidth() / 2.0f - carimage.getWidth() / 2.0f, gc.getHeight() / 2.0f - carimage.getHeight() / 2.0f);
-
-		trueTypeFont.drawString(20.0f, 20.0f, Double.toString(carspeed / pxinameter * 2.23694) , Color.green);		
+		
+		//trueTypeFont.drawString(20.0f, 20.0f, Double.toString(car.getAngle()) , Color.green);
+		//trueTypeFont.drawString(20.0f, 40.0f, Double.toString(car.getXVel()) , Color.green);
+		//trueTypeFont.drawString(20.0f, 60.0f, Double.toString(car.getYVel()) , Color.green);
 	}
 
 	@Override
 	public void update(GameContainer gc, StateBasedGame sbg, int delta) throws SlickException {
-		// TODO Auto-generated method stub
-		if (carspeed <= -10) {
-			carspeed = -10;
-		}
-		carx += ((float) delta / 1000.0) * carspeed * Math.sin(Math.toRadians(carangle));
-		cary -= ((float) delta / 1000.0) * carspeed * Math.cos(Math.toRadians(carangle));
-		carspeed += ((float) delta / 1000.0) * caracceleration - (((float) delta / 1000.0) * caracceleration * carspeed / (35.76 * pxinameter));
-		carangle -= cardirection;
+		car.updateCar(delta);
 	}
 
 	@Override
@@ -126,16 +120,16 @@ public class Game extends BasicGameState implements InputProviderListener {
 		String commandstring = arg0.toString();
 		switch (commandstring) {
 			case "[Command=up]":
-				caracceleration += acceleration * pxinameter;
+				car.accelerate(true);
 				break;
 			case "[Command=down]":
-				caracceleration -= braking * pxinameter;
+				car.brake(true);
 				break;
 			case "[Command=left]":
-				cardirection += 4;
+				car.turnRadius(-car.getTurnRadius());
 				break;
 			case "[Command=right]":
-				cardirection -= 4;
+				car.turnRadius(car.getTurnRadius());
 				break;
 		}
 	}
@@ -146,16 +140,16 @@ public class Game extends BasicGameState implements InputProviderListener {
 		String commandstring = arg0.toString();
 		switch (commandstring) {
 			case "[Command=up]":
-				caracceleration -= acceleration * pxinameter;
+				car.accelerate(false);
 				break;
 			case "[Command=down]":
-				caracceleration += braking * pxinameter;
+				car.brake(false);
 				break;
 			case "[Command=left]":
-				cardirection -= 4;
+				car.turnRadius(car.getTurnRadius());
 				break;
 			case "[Command=right]":
-				cardirection += 4;
+				car.turnRadius(-car.getTurnRadius());
 				break;
 		}
 	}
