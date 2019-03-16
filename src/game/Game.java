@@ -95,7 +95,7 @@ public class Game extends BasicGameState implements InputProviderListener {
 		g.setColor(Color.transparent);
 		carimage = carimage.getScaledCopy((int) (2.4 * PX_PER_METER), (int) (4.0 * PX_PER_METER));
 		carimage.setCenterOfRotation(carimage.getWidth() / 2.0f, carimage.getHeight() / 2.0f);
-		carimage.setRotation(car.getAngle());
+		carimage.setRotation((float) car.getAngle());
 		g.drawImage(carimage, gc.getWidth() / 2.0f - carimage.getWidth() / 2.0f, gc.getHeight() / 2.0f - carimage.getHeight() / 2.0f);
 		
 		//trueTypeFont.drawString(20.0f, 20.0f, Double.toString(car.getAngle()) , Color.green);

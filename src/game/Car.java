@@ -7,39 +7,39 @@ import utils.Pair;
 
 public class Car {
 	//car constants
-	private static final float ACCELERATION = 4000;
-	private static final float BRAKING = 20000;
-	private static final float TURN_FORCE_MAX = 2000;
-	private static final float MASS = 1000; //mass in kg
-	private static final float SIDE_TRACTION = 10000;
-	private static final float ROLLING_RESISTANCE = 200;
-	private static final float TURN_RADIUS = 10;
+	private static final double ACCELERATION = 4000;
+	private static final double BRAKING = 20000;
+	private static final double TURN_FORCE_MAX = 2000;
+	private static final double MASS = 1000; //mass in kg
+	private static final double SIDE_TRACTION = 10000;
+	private static final double ROLLING_RESISTANCE = 200;
+	private static final double TURN_RADIUS = 15;
 	
-	private float carx;
-	private float cary;
-	private float carxvel;
-	private float caryvel;
-	private float carxacc;
-	private float caryacc;
-	private float carangle;
-	private float carspeed;
+	private double carx;
+	private double cary;
+	private double carxvel;
+	private double caryvel;
+	private double carxacc;
+	private double caryacc;
+	private double carangle;
+	private double carspeed;
 	
 	private boolean accelerating;
 	private boolean braking;
-	private float turnradius; //positive for right turn, negative for left turn, zero for no turn
+	private double turnradius; //positive for right turn, negative for left turn, zero for no turn
 	
 	private Image carimage;
 	private Image wheelimage;
 	
 	//list of forces, in <newton, angle> format (positive y is up and zero degrees, angle calculated clockwise)
-	private Pair<Float, Float> accelerationforce;
-	private Pair<Float, Float> brakingforce;
-	private Pair<Float, Float> turningforce;
-	private Pair<Float, Float> yfrictionalforce;
-	private Pair<Float, Float> xfrictionalforce;
+	private Pair<Double, Double> accelerationforce;
+	private Pair<Double, Double> brakingforce;
+	private Pair<Double, Double> turningforce;
+	private Pair<Double, Double> yfrictionalforce;
+	private Pair<Double, Double> xfrictionalforce;
 	
 	
-	public Car(float carx, float cary, float carxvel, float caryvel, float carangle) {
+	public Car(double carx, double cary, double carxvel, double caryvel, double carangle) {
 		this.carx = carx;
 		this.cary = cary;
 		this.carxvel = carxvel;
@@ -57,84 +57,97 @@ public class Car {
 	
 	public void updateCar(int delta) {
 		if (accelerating) {
-			accelerationforce = new Pair<Float, Float>(ACCELERATION, 0f);
+			accelerationforce = new Pair<Double, Double>(ACCELERATION, 0.0);
 		} else {
-			accelerationforce = new Pair<Float, Float>(0f, 0f);
+			accelerationforce = new Pair<Double, Double>(0.0, 0.0);
 		}
 		
 		if (turnradius == 0) {
-			turningforce = new Pair<Float, Float>(0f, 0f);
+			turningforce = new Pair<Double, Double>(0.0, 0.0);
 		} else {
-			float force = (MASS * carspeed * carspeed) / (turnradius);
+			double force = (MASS * carspeed * carspeed) / (turnradius);
 			if (force > TURN_FORCE_MAX) {
-				turningforce = new Pair<Float, Float>(TURN_FORCE_MAX, 90f);
+				turningforce = new Pair<Double, Double>(TURN_FORCE_MAX, 90.0);
 			} else if (-force > TURN_FORCE_MAX) {
-				turningforce = new Pair<Float, Float>(-TURN_FORCE_MAX, 90f);
+				turningforce = new Pair<Double, Double>(-TURN_FORCE_MAX, 90.0);
 			} else {
-				turningforce = new Pair<Float, Float>(force, 90f);
+				turningforce = new Pair<Double, Double>(force, 90.0);
 			}
 		}
 		
-		float positionalxvel = (float) (carxvel * Math.cos(Math.toRadians(carangle)) - caryvel * Math.sin(Math.toRadians(carangle)));
-		float positionalyvel = (float) (carxvel * Math.sin(Math.toRadians(carangle)) + caryvel * Math.cos(Math.toRadians(carangle)));
+		double positionalxvel = (double) (carxvel * Math.cos(Math.toRadians(carangle)) - caryvel * Math.sin(Math.toRadians(carangle)));
+		double positionalyvel = (double) (carxvel * Math.sin(Math.toRadians(carangle)) + caryvel * Math.cos(Math.toRadians(carangle)));
 		
-		if (braking) {
-			if (positionalyvel > 0.05) {
-				brakingforce = new Pair<Float, Float>(BRAKING, 180f);
-			} else if (positionalyvel < 0.05) {
-				brakingforce = new Pair<Float, Float>(BRAKING, 0f);
+		if (Math.abs(positionalxvel) < (SIDE_TRACTION) * ((double) delta / 1000.0) / MASS){
+			xfrictionalforce = new Pair<Double, Double>(-MASS * positionalxvel / ((double) delta / 1000.0), 90.0);
+		} else {
+			if (positionalxvel > 0) {
+				xfrictionalforce = new Pair<Double, Double>(SIDE_TRACTION, -90.0);
+			} else if (positionalxvel < 0) {
+				xfrictionalforce = new Pair<Double, Double>(SIDE_TRACTION, 90.0);
 			} else {
-				brakingforce = new Pair<Float, Float>(0f, 0f);
+				xfrictionalforce = new Pair<Double, Double>(0.0, 0.0);
 			}
-		} else {
-			brakingforce = new Pair<Float, Float>(0f, 0f);
 		}
 		
-		if (positionalxvel > 0) {
-			xfrictionalforce = new Pair<Float, Float>(SIDE_TRACTION, -90f);
-		} else if (positionalxvel < 0) {
-			xfrictionalforce = new Pair<Float, Float>(SIDE_TRACTION, 90f);
+		if ((Math.abs(positionalyvel) < (BRAKING+ROLLING_RESISTANCE) * ((double) delta / 1000.0) / MASS)&&(braking)){
+			braking = false;
+			brakingforce = new Pair<Double, Double>(0.0, 0.0);
+			yfrictionalforce = new Pair<Double, Double>(-MASS * positionalyvel / ((double) delta / 1000.0), 0.0);
+		} else if ((Math.abs(positionalyvel) < (ROLLING_RESISTANCE) * ((double) delta / 1000.0) / MASS)&&(!braking)){
+			brakingforce = new Pair<Double, Double>(0.0, 0.0);
+			yfrictionalforce = new Pair<Double, Double>(-MASS * positionalyvel / ((double) delta / 1000.0), 0.0);
 		} else {
-			xfrictionalforce = new Pair<Float, Float>(0f, 0f);
+			if (braking) {
+				if (positionalyvel > 0) {
+					brakingforce = new Pair<Double, Double>(BRAKING, 180.0);
+				} else if (positionalyvel < 0) {
+					brakingforce = new Pair<Double, Double>(BRAKING, 0.0);
+				} else {
+					brakingforce = new Pair<Double, Double>(0.0, 0.0);
+				}
+			} else {
+				brakingforce = new Pair<Double, Double>(0.0, 0.0);
+			}		
+			
+			if (positionalyvel > 0) {
+				yfrictionalforce = new Pair<Double, Double>(ROLLING_RESISTANCE, 180.0);
+			} else if (positionalyvel < 0) {
+				yfrictionalforce = new Pair<Double, Double>(ROLLING_RESISTANCE, 0.0);
+			} else {
+				yfrictionalforce = new Pair<Double, Double>(0.0, 0.0);
+			}
 		}
 		
-		if (positionalyvel > 0) {
-			yfrictionalforce = new Pair<Float, Float>(ROLLING_RESISTANCE, 180f);
-		} else if (positionalyvel < 0) {
-			yfrictionalforce = new Pair<Float, Float>(ROLLING_RESISTANCE, 0f);
-		} else {
-			yfrictionalforce = new Pair<Float, Float>(0f, 0f);
-		}
-		
-		carxacc = (float) (
+		carxacc = (double) (
 					Math.sin(Math.toRadians(accelerationforce.getR())) * accelerationforce.getL() + 
 					Math.sin(Math.toRadians(brakingforce.getR())) * brakingforce.getL() + 
 					Math.sin(Math.toRadians(turningforce.getR())) * turningforce.getL() +
 					Math.sin(Math.toRadians(yfrictionalforce.getR())) * yfrictionalforce.getL() + 
 					Math.sin(Math.toRadians(xfrictionalforce.getR())) * xfrictionalforce.getL()
 					) / MASS;
-		caryacc = (float) (
+		caryacc = (double) (
 					Math.cos(Math.toRadians(accelerationforce.getR())) * accelerationforce.getL() + 
 					Math.cos(Math.toRadians(brakingforce.getR())) * brakingforce.getL() + 
 					Math.cos(Math.toRadians(turningforce.getR())) * turningforce.getL() +
 					Math.cos(Math.toRadians(yfrictionalforce.getR())) * yfrictionalforce.getL() + 
 					Math.cos(Math.toRadians(xfrictionalforce.getR())) * xfrictionalforce.getL()
 					) / MASS;
-		float unrotatedxvel = (float) (carxacc * delta / 1000.0);
-		float unrotatedyvel = (float) (caryacc * delta / 1000.0);
+		double unrotatedxvel = (double) (carxacc * delta / 1000.0);
+		double unrotatedyvel = (double) (caryacc * delta / 1000.0);
 		carxvel += unrotatedxvel * Math.cos(Math.toRadians(-carangle)) - unrotatedyvel * Math.sin(Math.toRadians(-carangle));
 		caryvel += unrotatedxvel * Math.sin(Math.toRadians(-carangle)) + unrotatedyvel * Math.cos(Math.toRadians(-carangle));
-		if (Math.abs(carxvel) < 0.01) {
+		carx += Game.PX_PER_METER * (carxvel * ((double) delta / 1000.0));
+		cary += Game.PX_PER_METER * (caryvel * ((double) delta / 1000.0));
+		if (Math.abs(carxvel) < 0.05) {
 			carxvel = 0;
 		}
-		if (Math.abs(caryvel) < 0.01) {
+		if (Math.abs(caryvel) < 0.05) {
 			caryvel = 0;
 		}
-		carx += Game.PX_PER_METER * (carxvel * ((float) delta / 1000.0));
-		cary += Game.PX_PER_METER * (caryvel * ((float) delta / 1000.0));
-		carspeed = (float) Math.sqrt(carxvel*carxvel + caryvel*caryvel);
+		carspeed = (double) Math.sqrt(carxvel*carxvel + caryvel*caryvel);
 		if (turnradius != 0) {
-			carangle += 360 * (carspeed * (float) delta / 1000.0)/(turnradius * 2 * Math.PI);
+			carangle += 360 * (carspeed * (double) delta / 1000.0)/(turnradius * 2 * Math.PI);
 		}
 	}
 	
@@ -146,31 +159,31 @@ public class Car {
 		braking = bool;
 	}
 	
-	public void turnRadius(float turnradius) {
+	public void turnRadius(double turnradius) {
 		this.turnradius += turnradius;
 	}
 	
-	public float getX() {
+	public double getX() {
 		return carx;
 	}
 	
-	public float getY() {
+	public double getY() {
 		return cary;
 	}
 	
-	public float getXVel() {
+	public double getXVel() {
 		return carxvel;
 	}
 	
-	public float getYVel() {
+	public double getYVel() {
 		return caryvel;
 	}
 	
-	public float getAngle() {
+	public double getAngle() {
 		return carangle;
 	}
 	
-	public float getTurnRadius() {
+	public double getTurnRadius() {
 		return TURN_RADIUS;
 	}
 	
