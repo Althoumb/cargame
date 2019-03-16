@@ -7,13 +7,15 @@ import utils.Pair;
 
 public class Car {
 	//car constants
-	private static final double ACCELERATION = 4000;
-	private static final double BRAKING = 20000;
-	private static final double TURN_FORCE_MAX = 2000;
-	private static final double MASS = 1000; //mass in kg
-	private static final double SIDE_TRACTION = 10000;
-	private static final double ROLLING_RESISTANCE = 200;
+	private static final double ACCELERATION = 24798.7183;
+	private static final double BRAKING = 50000;
+	private static final double TURN_FORCE_MAX = 5000;
+	private static final double MASS = 2107.97982; //mass in kg
+	private static final double SIDE_TRACTION = 40000;
+	private static final double ROLLING_RESISTANCE = 1000;
 	private static final double TURN_RADIUS = 15;
+	private static final double WIDTH = 2.5;
+	private static final double LENGTH = 4;
 	
 	private double carx;
 	private double cary;
@@ -39,7 +41,7 @@ public class Car {
 	private Pair<Double, Double> xfrictionalforce;
 	
 	
-	public Car(double carx, double cary, double carxvel, double caryvel, double carangle) {
+	public Car(double carx, double cary, double carxvel, double caryvel, double carangle, Image carimage) {
 		this.carx = carx;
 		this.cary = cary;
 		this.carxvel = carxvel;
@@ -47,12 +49,7 @@ public class Car {
 		this.carangle = carangle;
 		this.carxacc = 0;
 		this.caryacc = 0;
-		try {
-			carimage = new Image("/res/game/car.png");
-		} catch (SlickException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		this.carimage = carimage;
 	}
 	
 	public void updateCar(int delta) {
@@ -189,5 +186,13 @@ public class Car {
 	
 	public Image getImage() {
 		return carimage;
+	}
+	
+	public double getWidth() {
+		return WIDTH;
+	}
+	
+	public double getLength() {
+		return LENGTH;
 	}
 }

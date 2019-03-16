@@ -28,13 +28,13 @@ import utils.Pair;
 
 public class Game extends BasicGameState implements InputProviderListener {
 	
-	private static ArrayList<Pair<Pair<Integer, Integer>, Boolean>> roadtiles = new ArrayList<Pair<Pair<Integer, Integer>, Boolean>>();
-	
 	private static float tilewidth = 100;
 	public static final float PX_PER_METER = 50;
 	
 	Car car;
 	Image carimage;
+	
+	Map map;
 	
 	private TrueTypeFont trueTypeFont;
 	
@@ -46,11 +46,15 @@ public class Game extends BasicGameState implements InputProviderListener {
 	@Override
 	public void enter(GameContainer gc, StateBasedGame sbg) throws SlickException {
 		Random rand = new Random(System.nanoTime());
+		
+		ArrayList<Pair<Pair<Integer, Integer>, Boolean>> roadtiles = new ArrayList<Pair<Pair<Integer, Integer>, Boolean>>();
 		for(int x = -100; x <= 100; x++) {
 			for(int y = 0; y <= 1000; y++) {
 				roadtiles.add(new Pair<Pair<Integer, Integer>, Boolean>(new Pair<Integer, Integer>(x, y), rand.nextBoolean()));
 			}
 		}
+		
+		map = new Map(roadtiles);
 		
 		Font font = new Font("Verdana", Font.BOLD, 20);
 		trueTypeFont = new TrueTypeFont(font, true);
@@ -62,8 +66,13 @@ public class Game extends BasicGameState implements InputProviderListener {
 			provider.bindCommand(new KeyControl(Options.keybindings.get(key)), new BasicCommand(key));
 		}
 		
-		car = new Car(0, 0, 0, 0, 0);
-		carimage = car.getImage();
+		try {
+			carimage = new Image("/res/game/car.png");
+		} catch (SlickException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		car = new Car(0, 0, 0, 0, 0, carimage);
 	}
 	
 	@Override
@@ -78,7 +87,7 @@ public class Game extends BasicGameState implements InputProviderListener {
 		g.setDrawMode(Graphics.MODE_ALPHA_BLEND);
 		g.setColor(Color.black);
 		
-		for (Pair<Pair<Integer, Integer>, Boolean> pair : roadtiles) {
+		for (Pair<Pair<Integer, Integer>, Boolean> pair : map.getRoadTiles()) {
 			if (pair.getR()) {
 				float tilex = pair.getL().getL() * tilewidth;
 				float tiley = pair.getL().getR() * tilewidth;
@@ -93,7 +102,7 @@ public class Game extends BasicGameState implements InputProviderListener {
 		}
 		g.setDrawMode(Graphics.MODE_NORMAL);
 		g.setColor(Color.transparent);
-		carimage = carimage.getScaledCopy((int) (2.4 * PX_PER_METER), (int) (4.0 * PX_PER_METER));
+		carimage = carimage.getScaledCopy((int) (car.getWidth() * PX_PER_METER), (int) (car.getLength() * PX_PER_METER));
 		carimage.setCenterOfRotation(carimage.getWidth() / 2.0f, carimage.getHeight() / 2.0f);
 		carimage.setRotation((float) car.getAngle());
 		g.drawImage(carimage, gc.getWidth() / 2.0f - carimage.getWidth() / 2.0f, gc.getHeight() / 2.0f - carimage.getHeight() / 2.0f);
