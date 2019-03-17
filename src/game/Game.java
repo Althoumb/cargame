@@ -38,6 +38,7 @@ public class Game extends BasicGameState implements InputProviderListener {
 	Image carimage;
 	
 	Map map;
+	Image mapimage;
 	
 	private TrueTypeFont trueTypeFont;
 	
@@ -56,7 +57,7 @@ public class Game extends BasicGameState implements InputProviderListener {
 	public void enter(GameContainer gc, StateBasedGame sbg) throws SlickException {
 		Random rand = new Random(System.nanoTime());
 		
-		map = new Map(new File("res/maps/testmap.map"));
+		map = new Map(new Image("res/maps/testmap.jpg"), new Pair<Integer, Integer>(4900, 1285));
 		
 		Font font = new Font("Verdana", Font.BOLD, 20);
 		trueTypeFont = new TrueTypeFont(font, true);
@@ -83,28 +84,8 @@ public class Game extends BasicGameState implements InputProviderListener {
 		g.setBackground(Color.pink);
 		g.setColor(Color.white);
 		
-		int verttiles = (int) Math.ceil(gc.getHeight() * 2.0 / tilewidth);
-		int hortiles = (int) Math.ceil(gc.getWidth() * 2.0 / tilewidth);
-		int startx = map.getStartingTile().getL();
-		int starty = map.getStartingTile().getR();
-		for (int x = -hortiles + startx + (int) Math.ceil(car.getX() / tilewidth); x <= hortiles + startx + (int) Math.ceil(car.getX() / tilewidth); x++) {
-			for (int y = -verttiles + starty + (int) Math.ceil(car.getY() / tilewidth); y <= verttiles + starty + (int) Math.ceil(car.getY() / tilewidth); y++) {
-				if (((x > 0)&&(x < map.getRoadTiles().length))&&((y > 0)&&(y < map.getRoadTiles()[0].length))) {
-					if (map.getRoadTiles()[x][y]) {
-						float tilex = (x - startx) * tilewidth;
-						float tiley = (y - starty) * tilewidth;
-						tilex -= car.getX() - gc.getWidth() / 2.0f;
-						tiley -= car.getY() + gc.getHeight() / 2.0f;
-						if ((tilex + tilewidth >= 0)&&(tilex <= gc.getWidth())) {
-							if ((-tiley + tilewidth >= 0)&&(-tiley <= gc.getHeight())) {
-								g.fill(new Rectangle(tilex, -tiley, tilewidth, tilewidth));
-							}
-						}
-					}
-				}
-			}
-		}
-		
+		mapimage = map.getMap();
+		g.drawImage(mapimage, (float) (-map.getStartingCoordinates().getL() - car.getX() + gc.getWidth() / 2.0f), (float) (-map.getStartingCoordinates().getR() + car.getY()) + gc.getHeight() / 2.0f);
 		g.setColor(Color.transparent);
 		
 		
@@ -123,8 +104,8 @@ public class Game extends BasicGameState implements InputProviderListener {
 			carimage.setImageColor(1f, 1f, 1f, 1f - ((float) i / (prevlocs.length - 1)));
 			g.drawImage(carimage, (float) (xpos - car.getX() + gc.getWidth() / 2.0f - carimage.getWidth() / 2.0f), (float) (car.getY() - ypos + gc.getHeight() / 2.0f - carimage.getHeight() / 2.0f));
 		}
-		//trueTypeFont.drawString(20.0f, 20.0f, Double.toString(car.getAngle()) , Color.green);
-		//trueTypeFont.drawString(20.0f, 40.0f, Double.toString(car.getXVel()) , Color.green);
+		//trueTypeFont.drawString(20.0f, 20.0f, Double.toString(car.getX() + map.getStartingCoordinates().getL()) , Color.green);
+		//trueTypeFont.drawString(20.0f, 40.0f, Double.toString(car.getY() - map.getStartingCoordinates().getR()) , Color.green);
 		//trueTypeFont.drawString(20.0f, 60.0f, Double.toString(car.getYVel()) , Color.green);
 	}
 
