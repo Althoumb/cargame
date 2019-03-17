@@ -15,7 +15,7 @@ public class Car {
 	private static final double ROLLING_RESISTANCE = 1000;
 	private static final double TURN_RADIUS = 30;
 	private static final double WIDTH = 2.5;
-	private static final double LENGTH = 4;
+	private static final double LENGTH = 5;
 	
 	private double carx;
 	private double cary;

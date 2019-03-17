@@ -2,6 +2,7 @@ package game;
 
 import java.awt.Font;
 import java.io.File;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -29,8 +30,8 @@ import utils.Pair;
 
 public class Game extends BasicGameState implements InputProviderListener {
 	
-	private static float tilewidth = 40;
-	public static final float PX_PER_METER = 20;
+	private static float tilewidth = 10;
+	public static final float PX_PER_METER = 10;
 	Pair<Pair<Double, Double>, Double>[] prevlocs;
 	
 	Car car;
@@ -43,6 +44,12 @@ public class Game extends BasicGameState implements InputProviderListener {
 	@Override
 	public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
 		// TODO Auto-generated method stub
+		Pair<Double, Double> pair = new Pair<Double, Double>(0.0, 0.0);
+		prevlocs = (Pair<Pair<Double, Double>, Double>[]) Array.newInstance(pair.getClass(), 20);
+		for (int i = 0; i <= prevlocs.length - 1; i++){ 
+			prevlocs[i] = new Pair<Pair<Double, Double>, Double>(new Pair<Double, Double>(-100000.0, -100000.0), 0.0);
+		}
+		
 	}
 	
 	@Override
@@ -99,11 +106,23 @@ public class Game extends BasicGameState implements InputProviderListener {
 		}
 		
 		g.setColor(Color.transparent);
+		
+		
 		carimage = carimage.getScaledCopy((int) (car.getWidth() * PX_PER_METER), (int) (car.getLength() * PX_PER_METER));
 		carimage.setCenterOfRotation(carimage.getWidth() / 2.0f, carimage.getHeight() / 2.0f);
-		carimage.setRotation((float) car.getAngle());
-		g.drawImage(carimage, gc.getWidth() / 2.0f - carimage.getWidth() / 2.0f, gc.getHeight() / 2.0f - carimage.getHeight() / 2.0f);
-		
+		double xpos = car.getX();
+		double ypos = car.getY();
+		for (int i = 0; i <= prevlocs.length - 1; i++) {
+			xpos -= PX_PER_METER * prevlocs[i].getL().getL()*(1.0/60.0);
+			ypos -= PX_PER_METER * prevlocs[i].getL().getR()*(1.0/60.0);
+		}
+		for (int i = prevlocs.length - 1; i >= 0; i--) {
+			xpos += PX_PER_METER * prevlocs[i].getL().getL()*(1.0/60.0);
+			ypos += PX_PER_METER * prevlocs[i].getL().getR()*(1.0/60.0);
+			carimage.setRotation(prevlocs[i].getR().floatValue());
+			carimage.setImageColor(1f, 1f, 1f, 1f - ((float) i / (prevlocs.length - 1)));
+			g.drawImage(carimage, (float) (xpos - car.getX() + gc.getWidth() / 2.0f - carimage.getWidth() / 2.0f), (float) (car.getY() - ypos + gc.getHeight() / 2.0f - carimage.getHeight() / 2.0f));
+		}
 		//trueTypeFont.drawString(20.0f, 20.0f, Double.toString(car.getAngle()) , Color.green);
 		//trueTypeFont.drawString(20.0f, 40.0f, Double.toString(car.getXVel()) , Color.green);
 		//trueTypeFont.drawString(20.0f, 60.0f, Double.toString(car.getYVel()) , Color.green);
@@ -112,6 +131,10 @@ public class Game extends BasicGameState implements InputProviderListener {
 	@Override
 	public void update(GameContainer gc, StateBasedGame sbg, int delta) throws SlickException {
 		car.updateCar(delta);
+		for (int i = prevlocs.length - 1; i > 0; i--){ 
+		     prevlocs[i] = prevlocs[i-1];
+		}
+		prevlocs[0] = new Pair<Pair<Double, Double>, Double>(new Pair<Double, Double>(car.getXVel(), car.getYVel()), car.getAngle());
 	}
 
 	@Override
