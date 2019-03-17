@@ -115,7 +115,11 @@ public class Game extends BasicGameState implements InputProviderListener {
 			g.drawImage(carimage, (float) (xpos - car.getX() + gc.getWidth() / 2.0f - carimage.getWidth() / 2.0f), (float) (car.getY() - ypos + gc.getHeight() / 2.0f - carimage.getHeight() / 2.0f));
 		}
 		Boolean collided;
-		collided = (mapmask.getRGB((int) (map.getStartingCoordinates().getL() + car.getX()), (int) (map.getStartingCoordinates().getR() - car.getY())) == java.awt.Color.BLACK.getRGB());
+		if ((((map.getStartingCoordinates().getL() + car.getX()) < mapmask.getWidth())&&(map.getStartingCoordinates().getR() - car.getY() < mapmask.getHeight()))&&(((map.getStartingCoordinates().getL() + car.getX()) >= 0)&&(map.getStartingCoordinates().getR() - car.getY() >= 0))){
+			collided = (mapmask.getRGB((int) (map.getStartingCoordinates().getL() + car.getX()), (int) (map.getStartingCoordinates().getR() - car.getY())) == java.awt.Color.BLACK.getRGB());
+		} else {
+			collided = true;
+		}
 		trueTypeFont.drawString(20.0f, 20.0f, String.valueOf(collided) , Color.green);
 		//trueTypeFont.drawString(20.0f, 40.0f, Double.toString(car.getY() - map.getStartingCoordinates().getR()) , Color.green);
 		//trueTypeFont.drawString(20.0f, 60.0f, Double.toString(car.getYVel()) , Color.green);
