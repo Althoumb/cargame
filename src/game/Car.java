@@ -11,9 +11,9 @@ public class Car {
 	private static final double BRAKING = 50000;
 	private static final double TURN_FORCE_MAX = 5000;
 	private static final double MASS = 2107.97982; //mass in kg
-	private static final double SIDE_TRACTION = 40000;
+	private static final double SIDE_TRACTION = 100000;
 	private static final double ROLLING_RESISTANCE = 1000;
-	private static final double TURN_RADIUS = 15;
+	private static final double TURN_RADIUS = 30;
 	private static final double WIDTH = 2.5;
 	private static final double LENGTH = 4;
 	

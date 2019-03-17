@@ -1,6 +1,7 @@
 package game;
 
 import java.awt.Font;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -28,8 +29,9 @@ import utils.Pair;
 
 public class Game extends BasicGameState implements InputProviderListener {
 	
-	private static float tilewidth = 100;
-	public static final float PX_PER_METER = 50;
+	private static float tilewidth = 40;
+	public static final float PX_PER_METER = 20;
+	Pair<Pair<Double, Double>, Double>[] prevlocs;
 	
 	Car car;
 	Image carimage;
@@ -47,14 +49,7 @@ public class Game extends BasicGameState implements InputProviderListener {
 	public void enter(GameContainer gc, StateBasedGame sbg) throws SlickException {
 		Random rand = new Random(System.nanoTime());
 		
-		ArrayList<Pair<Pair<Integer, Integer>, Boolean>> roadtiles = new ArrayList<Pair<Pair<Integer, Integer>, Boolean>>();
-		for(int x = -100; x <= 100; x++) {
-			for(int y = 0; y <= 1000; y++) {
-				roadtiles.add(new Pair<Pair<Integer, Integer>, Boolean>(new Pair<Integer, Integer>(x, y), rand.nextBoolean()));
-			}
-		}
-		
-		map = new Map(roadtiles);
+		map = new Map(new File("res/maps/testmap.map"));
 		
 		Font font = new Font("Verdana", Font.BOLD, 20);
 		trueTypeFont = new TrueTypeFont(font, true);
@@ -67,7 +62,7 @@ public class Game extends BasicGameState implements InputProviderListener {
 		}
 		
 		try {
-			carimage = new Image("/res/game/car.png");
+			carimage = new Image("res/game/car.png");
 		} catch (SlickException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -78,29 +73,31 @@ public class Game extends BasicGameState implements InputProviderListener {
 	@Override
 	public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
 
-		g.setBackground(Color.white);
-				
-		g.setAntiAlias(true);
-		GL11.glEnable(SGL.GL_BLEND);
-		GL11.glBlendFunc(GL11.GL_SRC_ALPHA_SATURATE, GL11.GL_ONE);
+		g.setBackground(Color.pink);
+		g.setColor(Color.white);
 		
-		g.setDrawMode(Graphics.MODE_ALPHA_BLEND);
-		g.setColor(Color.black);
-		
-		for (Pair<Pair<Integer, Integer>, Boolean> pair : map.getRoadTiles()) {
-			if (pair.getR()) {
-				float tilex = pair.getL().getL() * tilewidth;
-				float tiley = pair.getL().getR() * tilewidth;
-				tilex -= car.getX() + gc.getWidth() / 2.0f;
-				tiley -= car.getY() + gc.getWidth() / 2.0f;
-				if ((tilex + tilewidth >= 0)&&(tilex <= gc.getWidth())) {
-					if ((-tiley + tilewidth >= 0)&&(-tiley <= gc.getHeight())) {
-						g.fill(new Rectangle(tilex, -tiley, tilewidth, tilewidth));
+		int verttiles = (int) Math.ceil(gc.getHeight() * 2.0 / tilewidth);
+		int hortiles = (int) Math.ceil(gc.getWidth() * 2.0 / tilewidth);
+		int startx = map.getStartingTile().getL();
+		int starty = map.getStartingTile().getR();
+		for (int x = -hortiles + startx + (int) Math.ceil(car.getX() / tilewidth); x <= hortiles + startx + (int) Math.ceil(car.getX() / tilewidth); x++) {
+			for (int y = -verttiles + starty + (int) Math.ceil(car.getY() / tilewidth); y <= verttiles + starty + (int) Math.ceil(car.getY() / tilewidth); y++) {
+				if (((x > 0)&&(x < map.getRoadTiles().length))&&((y > 0)&&(y < map.getRoadTiles()[0].length))) {
+					if (map.getRoadTiles()[x][y]) {
+						float tilex = (x - startx) * tilewidth;
+						float tiley = (y - starty) * tilewidth;
+						tilex -= car.getX() - gc.getWidth() / 2.0f;
+						tiley -= car.getY() + gc.getHeight() / 2.0f;
+						if ((tilex + tilewidth >= 0)&&(tilex <= gc.getWidth())) {
+							if ((-tiley + tilewidth >= 0)&&(-tiley <= gc.getHeight())) {
+								g.fill(new Rectangle(tilex, -tiley, tilewidth, tilewidth));
+							}
+						}
 					}
 				}
 			}
 		}
-		g.setDrawMode(Graphics.MODE_NORMAL);
+		
 		g.setColor(Color.transparent);
 		carimage = carimage.getScaledCopy((int) (car.getWidth() * PX_PER_METER), (int) (car.getLength() * PX_PER_METER));
 		carimage.setCenterOfRotation(carimage.getWidth() / 2.0f, carimage.getHeight() / 2.0f);
