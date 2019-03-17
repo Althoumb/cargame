@@ -1,10 +1,14 @@
 package game;
 
 import java.awt.Font;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Random;
+
+import javax.imageio.ImageIO;
 
 import org.lwjgl.opengl.GL11;
 import org.newdawn.slick.Color;
@@ -39,6 +43,7 @@ public class Game extends BasicGameState implements InputProviderListener {
 	
 	Map map;
 	Image mapimage;
+	BufferedImage mapmask;
 	
 	private TrueTypeFont trueTypeFont;
 	
@@ -58,7 +63,12 @@ public class Game extends BasicGameState implements InputProviderListener {
 		Random rand = new Random(System.nanoTime());
 		
 		map = new Map(new Image("res/maps/testmap.jpg"), new Pair<Integer, Integer>(4900, 1285));
-		
+		try {
+			mapmask = ImageIO.read(new File("res/maps/testmask.jpg"));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		Font font = new Font("Verdana", Font.BOLD, 20);
 		trueTypeFont = new TrueTypeFont(font, true);
 		
@@ -104,7 +114,9 @@ public class Game extends BasicGameState implements InputProviderListener {
 			carimage.setImageColor(1f, 1f, 1f, 1f - ((float) i / (prevlocs.length - 1)));
 			g.drawImage(carimage, (float) (xpos - car.getX() + gc.getWidth() / 2.0f - carimage.getWidth() / 2.0f), (float) (car.getY() - ypos + gc.getHeight() / 2.0f - carimage.getHeight() / 2.0f));
 		}
-		//trueTypeFont.drawString(20.0f, 20.0f, Double.toString(car.getX() + map.getStartingCoordinates().getL()) , Color.green);
+		Boolean collided;
+		collided = (mapmask.getRGB((int) (map.getStartingCoordinates().getL() + car.getX()), (int) (map.getStartingCoordinates().getR() - car.getY())) == java.awt.Color.BLACK.getRGB());
+		trueTypeFont.drawString(20.0f, 20.0f, String.valueOf(collided) , Color.green);
 		//trueTypeFont.drawString(20.0f, 40.0f, Double.toString(car.getY() - map.getStartingCoordinates().getR()) , Color.green);
 		//trueTypeFont.drawString(20.0f, 60.0f, Double.toString(car.getYVel()) , Color.green);
 	}
