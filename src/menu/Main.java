@@ -40,7 +40,7 @@ public class Main extends StateBasedGame {
     // Main Method
     public static void main(String[] args) {
         try {
-            AppGameContainer app = new AppGameContainer(new Main("Fracas v" + VERSION));
+            AppGameContainer app = new AppGameContainer(new Main("CarGame v" + VERSION));
             app.setDisplayMode(WIDTH, HEIGHT, false);
             app.setVSync(true);
             app.setTargetFrameRate(FPS);

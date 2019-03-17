@@ -16,6 +16,7 @@ import org.newdawn.slick.command.Command;
 import org.newdawn.slick.command.InputProvider;
 import org.newdawn.slick.command.InputProviderListener;
 import org.newdawn.slick.command.KeyControl;
+import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.state.BasicGameState;
 import org.newdawn.slick.state.StateBasedGame;
 import org.newdawn.slick.state.transition.FadeInTransition;
@@ -71,6 +72,9 @@ public class SelectScreen extends BasicGameState implements KeyListener, InputPr
 	public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
 		// scale and draw the menu background
 		backgroundimage.getScaledCopy(gc.getWidth(), gc.getHeight()).draw(0,0);
+		
+		g.draw(new Rectangle(0, gc.getHeight() / 2 - optionydelta / 2, gc.getWidth() + 1, optionydelta));
+		
 		for (int i = 0; i < maps.length; i++) {
 			drawString(maps[i].getName(), gc.getHeight() / 2 + (i - levelID) * optionydelta, true, ttf, gc);
 		}

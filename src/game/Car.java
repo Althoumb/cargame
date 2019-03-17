@@ -13,7 +13,7 @@ public class Car {
 	private static final double MASS = 2107.97982; //mass in kg
 	private static final double SIDE_TRACTION = 100000;
 	private static final double ROLLING_RESISTANCE = 1000;
-	private static final double TURN_RADIUS = 30;
+	private static final double TURN_RADIUS = 20;
 	private static final double WIDTH = 2.5;
 	private static final double LENGTH = 5;
 	
@@ -180,8 +180,12 @@ public class Car {
 		return carangle;
 	}
 	
-	public double getTurnRadius() {
+	public double getTurnRadiusConstant() {
 		return TURN_RADIUS;
+	}
+	
+	public double getTurnRadius() {
+		return turnradius;
 	}
 	
 	public Image getImage() {

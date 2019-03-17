@@ -43,6 +43,8 @@ public class Game extends BasicGameState implements InputProviderListener {
 	
 	Car car;
 	Image carimage;
+
+	Boolean collided;
 	
 	Map map;
 	Image mapimage;
@@ -126,7 +128,6 @@ public class Game extends BasicGameState implements InputProviderListener {
 				carimage.setImageColor(1f, 1f, 1f, 1f - ((float) i / (prevlocs.length - 1)));
 				g.drawImage(carimage, (float) (xpos - car.getX() + gc.getWidth() / 2.0f - carimage.getWidth() / 2.0f), (float) (car.getY() - ypos + gc.getHeight() / 2.0f - carimage.getHeight() / 2.0f));
 			}
-			Boolean collided;
 			if ((((map.getStartingCoordinates().getL() + car.getX()) < mapmask.getWidth())&&(map.getStartingCoordinates().getR() - car.getY() < mapmask.getHeight()))&&(((map.getStartingCoordinates().getL() + car.getX()) >= 0)&&(map.getStartingCoordinates().getR() - car.getY() >= 0))){
 				collided = (mapmask.getColor((int) (map.getStartingCoordinates().getL() + car.getX()), (int) (map.getStartingCoordinates().getR() - car.getY())).equals(Color.black));
 			} else {
@@ -151,7 +152,17 @@ public class Game extends BasicGameState implements InputProviderListener {
 				e.printStackTrace();
 			}
 	        lastLoaded = nextResource.getDescription();
-	    } else { 
+	    } else {
+	    	if (collided) {
+	    		Pair<Double, Double> pair = new Pair<Double, Double>(0.0, 0.0);
+	    		prevlocs = (Pair<Pair<Double, Double>, Double>[]) Array.newInstance(pair.getClass(), 20);
+	    		for (int i = 0; i <= prevlocs.length - 1; i++){ 
+	    			prevlocs[i] = new Pair<Pair<Double, Double>, Double>(new Pair<Double, Double>(-100000.0, -100000.0), 0.0);
+	    		}
+	    		double storedTurnRadius = car.getTurnRadius();
+	    		car = new Car(0, 0, 0, 0, 0, carimage);
+	    		car.turnRadius(storedTurnRadius);
+	    	}
 	    	car.updateCar(delta);
 			for (int i = prevlocs.length - 1; i > 0; i--){ 
 			     prevlocs[i] = prevlocs[i-1];
@@ -178,10 +189,10 @@ public class Game extends BasicGameState implements InputProviderListener {
 				car.brake(true);
 				break;
 			case "[Command=left]":
-				car.turnRadius(-car.getTurnRadius());
+				car.turnRadius(-car.getTurnRadiusConstant());
 				break;
 			case "[Command=right]":
-				car.turnRadius(car.getTurnRadius());
+				car.turnRadius(car.getTurnRadiusConstant());
 				break;
 		}
 	}
@@ -198,10 +209,10 @@ public class Game extends BasicGameState implements InputProviderListener {
 				car.brake(false);
 				break;
 			case "[Command=left]":
-				car.turnRadius(car.getTurnRadius());
+				car.turnRadius(car.getTurnRadiusConstant());
 				break;
 			case "[Command=right]":
-				car.turnRadius(-car.getTurnRadius());
+				car.turnRadius(-car.getTurnRadiusConstant());
 				break;
 		}
 	}

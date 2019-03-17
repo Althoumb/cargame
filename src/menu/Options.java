@@ -105,7 +105,7 @@ public class Options extends BasicGameState implements KeyListener, InputProvide
 		}
 		ypos -= optionydelta * Options.keybindings.size();
 		
-		g.draw(new Rectangle(0, gc.getHeight() / 2 - optionydelta / 2, gc.getWidth(), optionydelta));
+		g.draw(new Rectangle(0, gc.getHeight() / 2 - optionydelta / 2, gc.getWidth() + 1, optionydelta));
 	}
 
 	private void drawString(String string, int Height, boolean right, TrueTypeFont ttf, GameContainer gc) {
@@ -169,7 +169,6 @@ public class Options extends BasicGameState implements KeyListener, InputProvide
 	public void controlPressed(Command arg0) {
 		// TODO Auto-generated method stub
 		String commandstring = arg0.toString();
-		System.out.println(commandstring);
 		if (!choosekey && acceptinginput) {
 			switch (commandstring) {
 			case "[Command=up]":
