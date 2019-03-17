@@ -101,7 +101,7 @@ public class MainMenu extends BasicGameState {
 		} else if (input.isKeyPressed(Options.keybindings.get("select"))) {
 			switch (selection) {
 			case 0:
-				sbg.enterState(3, null, new VerticalSplitTransition());
+				sbg.enterState(2, null, new VerticalSplitTransition());
 				break;
 			case 1:
 				sbg.enterState(4, new FadeOutTransition(), new FadeInTransition());

@@ -1,5 +1,8 @@
 package menu;
 
+import java.awt.Font;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.newdawn.slick.GameContainer;
@@ -7,6 +10,7 @@ import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.KeyListener;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.TrueTypeFont;
 import org.newdawn.slick.command.BasicCommand;
 import org.newdawn.slick.command.Command;
 import org.newdawn.slick.command.InputProvider;
@@ -14,7 +18,10 @@ import org.newdawn.slick.command.InputProviderListener;
 import org.newdawn.slick.command.KeyControl;
 import org.newdawn.slick.state.BasicGameState;
 import org.newdawn.slick.state.StateBasedGame;
+import org.newdawn.slick.state.transition.FadeInTransition;
+import org.newdawn.slick.state.transition.FadeOutTransition;
 
+import game.Game;
 import utils.Pair;
 
 public class SelectScreen extends BasicGameState implements KeyListener, InputProviderListener {
@@ -22,33 +29,40 @@ public class SelectScreen extends BasicGameState implements KeyListener, InputPr
 	// ID we return to class 'Application'
 	public static final int ID = 2;
 	
-	Image backgroundimage;
+	File mapfolder = new File("res/maps");
+	File[] maps = mapfolder.listFiles();
+	private int levelID = 0;
 	
-	HashMap<Integer, Pair<Integer, Integer>> cursorcoordinates = new HashMap<Integer, Pair<Integer, Integer>>();
-	HashMap<Integer, Pair<Integer, Integer>> cursorspeed = new HashMap<Integer, Pair<Integer, Integer>>();
-	int cursorvelocity = 4;
+	boolean select;
+	boolean exit;
 	
-	int players = 1;
+	// space between top of text options
+	int optionydelta = 20;
+	
+	Image backgroundimage;	
+
+	TrueTypeFont ttf;
 
 	// init-method for initializing all resources
 	@Override
 	public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
-		backgroundimage = new Image("res/selectscreen/selectbackground.jpg");
+		backgroundimage = new Image("res/selectscreen/selectbackground.jpg");		
+
+		Font font = new Font("Verdana", Font.BOLD, 20);
+		ttf = new TrueTypeFont(font, true);
 	}
 	
 	// enter-method for starting things when state entered
 	@Override
 	public void enter(GameContainer gc, StateBasedGame sbg) {
+		select = false;
+		exit = false;
+		
 		InputProvider provider = new InputProvider(gc.getInput());
 		provider.addListener(this);
 		
 		for (String key : Options.keybindings.keySet()) {
 			provider.bindCommand(new KeyControl(Options.keybindings.get(key)), new BasicCommand(key));
-		}
-		
-		for (int i = 1; i <= players; i++) {
-			cursorcoordinates.put(i, new Pair<Integer, Integer>(gc.getWidth() / 2, gc.getHeight() / 2));
-			cursorspeed.put(i, new Pair<Integer, Integer>(0, 0));
 		}
 	}
 	
@@ -57,14 +71,32 @@ public class SelectScreen extends BasicGameState implements KeyListener, InputPr
 	public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
 		// scale and draw the menu background
 		backgroundimage.getScaledCopy(gc.getWidth(), gc.getHeight()).draw(0,0);
-		g.drawRect(cursorcoordinates.get(1).getL(), cursorcoordinates.get(1).getR(), 10, 10);
+		for (int i = 0; i < maps.length; i++) {
+			drawString(maps[i].getName(), gc.getHeight() / 2 + (i - levelID) * optionydelta, true, ttf, gc);
+		}
+	}
+	
+	private void drawString(String string, int Height, boolean right, TrueTypeFont ttf, GameContainer gc) {
+		if (right) {
+			ttf.drawString(gc.getWidth() / 2, Height - ttf.getHeight(string) / 2, string);
+		} else {
+			ttf.drawString(gc.getWidth() / 2 - ttf.getWidth(string), Height - ttf.getHeight(string) / 2, string);
+		}
+	}
+	
+	private void selectMap(int levelID) {
+		Game.setLevel(maps[levelID].getName());
 	}
 
 	// update-method with all the magic happening in it
 	@Override
 	public void update(GameContainer gc, StateBasedGame sbg, int arg2) throws SlickException {
-		cursorcoordinates.get(1).setR(cursorcoordinates.get(1).getR() + cursorspeed.get(1).getR());
-		cursorcoordinates.get(1).setL(cursorcoordinates.get(1).getL() + cursorspeed.get(1).getL());
+		if (select) {
+			sbg.enterState(3, new FadeOutTransition(), new FadeInTransition());
+		}
+		if (exit) {
+			sbg.enterState(1, new FadeOutTransition(), new FadeInTransition());
+		}
 	}
 
 	// Returning 'ID' from class 'MainMenu'
@@ -79,16 +111,21 @@ public class SelectScreen extends BasicGameState implements KeyListener, InputPr
 		String commandstring = arg0.toString();
 		switch (commandstring) {
 			case "[Command=up]":
-				cursorspeed.get(1).setR(cursorspeed.get(1).getR() + (-cursorvelocity));
+				if (levelID > 0) {
+					levelID -= 1;
+				}
 				break;
 			case "[Command=down]":
-				cursorspeed.get(1).setR(cursorspeed.get(1).getR() + (cursorvelocity));
+				if (levelID < maps.length - 1) {
+					levelID += 1;
+				}
 				break;
-			case "[Command=left]":
-				cursorspeed.get(1).setL(cursorspeed.get(1).getL() + (-cursorvelocity));
+			case "[Command=select]":
+				selectMap(levelID);
+				select = true;
 				break;
-			case "[Command=right]":
-				cursorspeed.get(1).setL(cursorspeed.get(1).getL() + (cursorvelocity));
+			case "[Command=exit]":
+				exit = true;
 				break;
 		}
 	}
@@ -98,18 +135,6 @@ public class SelectScreen extends BasicGameState implements KeyListener, InputPr
 		// TODO Auto-generated method stub
 		String commandstring = arg0.toString();
 		switch (commandstring) {
-			case "[Command=up]":
-				cursorspeed.get(1).setR(cursorspeed.get(1).getR() + (cursorvelocity));
-				break;
-			case "[Command=down]":
-				cursorspeed.get(1).setR(cursorspeed.get(1).getR() + (-cursorvelocity));
-				break;
-			case "[Command=left]":
-				cursorspeed.get(1).setL(cursorspeed.get(1).getL() + (cursorvelocity));
-				break;
-			case "[Command=right]":
-				cursorspeed.get(1).setL(cursorspeed.get(1).getL() + (-cursorvelocity));
-				break;
 		}
 	}
 }

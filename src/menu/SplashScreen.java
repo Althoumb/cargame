@@ -30,14 +30,13 @@ public class SplashScreen extends BasicGameState {
 	float imagealpha = 0;
 	
 	long runtime = 0;
-	long lastframetime = 0;
+	long lastframetime = -1;
 	
 	Input input;
 	
 	// init-method for initializing all resources
 	@Override
 	public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
-		
 		// gets list of splash files in the splashes folder
 		ArrayList<File> imagefiles = FileGetter.filesInFolder(new File("res/splashes"));
 		
@@ -45,9 +44,6 @@ public class SplashScreen extends BasicGameState {
 		for(File imagefile: imagefiles) {
 			images.add(new Image(imagefile.toString()));
 		}
-		
-		// initialize timing
-		lastframetime = Timing.getTimeMs();
 		
 		// chooses first splash
 		currentsplash = images.get(0);
@@ -73,6 +69,10 @@ public class SplashScreen extends BasicGameState {
 	// update-method with all the magic happening in it
 	@Override
 	public void update(GameContainer gc, StateBasedGame sbg, int arg2) throws SlickException {
+		// initialize timing
+		if (lastframetime == -1) {
+			lastframetime = Timing.getTimeMs();
+		}
 		
 		// updates runtime with delta
 		runtime += Timing.getTimeMs() - lastframetime;

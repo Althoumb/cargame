@@ -36,7 +36,6 @@ import utils.Pair;
 
 public class Game extends BasicGameState implements InputProviderListener {
 	
-	private static float tilewidth = 10;
 	public static final float PX_PER_METER = 10;
 	Pair<Pair<Double, Double>, Double>[] prevlocs;
 	
@@ -53,15 +52,25 @@ public class Game extends BasicGameState implements InputProviderListener {
 	
 	String lastLoaded;
 	
+	private static String level;
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
-		// TODO Auto-generated method stub
+		
+	}
+	
+	public static void setLevel(String level) {
+		Game.level = level;
+	}
+	
+	@Override
+	public void enter(GameContainer gc, StateBasedGame sbg) throws SlickException {	
 		LoadingList.setDeferredLoading(true);
 		
-		mapimage = new Image("res/maps/testmap.jpg");
+		mapimage = new Image("res/maps/".concat(level).concat("/map.jpg"));
 		
-		mapmask = new Image("res/maps/testmask.jpg");
+		mapmask = new Image("res/maps/".concat(level).concat("/mask.jpg"));
 		
 		font = new Font("Verdana", Font.BOLD, 20);
 
@@ -71,10 +80,7 @@ public class Game extends BasicGameState implements InputProviderListener {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-	
-	@Override
-	public void enter(GameContainer gc, StateBasedGame sbg) throws SlickException {	
+		
 		InputProvider provider = new InputProvider(gc.getInput());
 		provider.addListener(this);
 		for (String key : Options.keybindings.keySet()) {
