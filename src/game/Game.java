@@ -70,9 +70,9 @@ public class Game extends BasicGameState implements InputProviderListener {
 	public void enter(GameContainer gc, StateBasedGame sbg) throws SlickException {	
 		LoadingList.setDeferredLoading(true);
 		
-		mapimage = new Image("res/maps/".concat(level).concat("/map.jpg"));
+		mapimage = new Image("res/maps/".concat(level).concat("/map.png"));
 		
-		mapmask = new Image("res/maps/".concat(level).concat("/mask.jpg"));
+		mapmask = new Image("res/maps/".concat(level).concat("/mask.png"));
 		
 		font = new Font("Verdana", Font.BOLD, 20);
 
